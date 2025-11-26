@@ -63,11 +63,29 @@ def generate_start_state(grid: Grid, fixed: list[list[bool]]) -> Grid:
                         idx += 1
     return new_grid
 
+def evaluate(grid:Grid)-> int:
+    score = 0
+    target = set(range(1, 10 ))
 
+    for r in range(9):
+        row_numbers = set(grid[r])
+        missing = target - row_numbers
+        score += len(missing)
+
+    for c in range(9):
+        col_numbers = set(grid[r][c] for r in range(9))
+        missing = target - col_numbers
+        score += len(missing)
+    return score
+
+def get_cells(fixed: list [])
 if __name__ == "__main__":
     puzzles= read_puzzles("./Sudoku_puzzels_5.txt")
     first = puzzles[0]
     fixed = get_fixed_cells(first)
+    start = generate_start_state(first, fixed)
+
+
     # print("Originele puzzel:")
     # print_grid(first)
 
@@ -75,7 +93,7 @@ if __name__ == "__main__":
     # start = generate_start_state(first, fixed)
     # print_grid(start)
     #print(f"Aantal puzzels: {len(puzzles)}\n" )
-    #print_grid(puzzles[0])
+    #print_grid(puzzles[0]) 
     # print("Originele puzzel:")
     # print_grid(first)
 
@@ -83,6 +101,10 @@ if __name__ == "__main__":
     # fixed = get_fixed_cells(first)
     # for row in fixed:
     #     print(row)
+ 
+    # print("Start-state:")
+    # print_grid(start)
 
+    # print("\nEvaluatie van start-state:", evaluate(start))
 
 
