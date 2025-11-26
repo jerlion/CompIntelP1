@@ -65,15 +65,15 @@ def generate_start_state(grid: Grid, fixed: list[list[bool]]) -> Grid:
 
 
 if __name__ == "__main__":
-    puzzles= read_puzzles("/Users/Jerli/Documents/AAA-Universiteit/Computationele intelligentie/Sudoku_puzzels_5.txt")
+    puzzles= read_puzzles("./Sudoku_puzzels_5.txt")
     first = puzzles[0]
     fixed = get_fixed_cells(first)
-    print("Originele puzzel:")
-    print_grid(first)
+    # print("Originele puzzel:")
+    # print_grid(first)
 
-    print("\nStart-state (blokken gevuld met 1-9, fixed cells behouden):")
-    start = generate_start_state(first, fixed)
-    print_grid(start)
+    # print("\nStart-state (blokken gevuld met 1-9, fixed cells behouden):")
+    # start = generate_start_state(first, fixed)
+    # print_grid(start)
     #print(f"Aantal puzzels: {len(puzzles)}\n" )
     #print_grid(puzzles[0])
     # print("Originele puzzel:")
