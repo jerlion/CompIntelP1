@@ -66,12 +66,12 @@ def generate_start_state(grid: Grid, fixed: list[list[bool]]) -> Grid:
 def evaluatiefunctie(grid: Grid):
     score = 0
 
-    for rijen in range (9):
+    for rij in range (9):
         gemist = 9 - len(set(grid[rij]))
         score = score + gemist
 
-    for kolommen in range (9):
-        kolom = [grid[rijen][kolom] for rij in range(9)]
+    for kol in range (9):
+        kolom = [grid[rij][kol] for rij in range(9)]
         gemist = 9 - len(set(kolom))
         score = score + gemist 
     return score
