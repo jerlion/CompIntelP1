@@ -63,9 +63,33 @@ def generate_start_state(grid: Grid, fixed: list[list[bool]]) -> Grid:
                         idx += 1
     return new_grid
 
+def evaluatiefunctie(grid: Grid):
+    score = 0
+
+    for rijen in range (9):
+        gemist = 9 - len(set(grid[rij]))
+        score = score + gemist
+
+    for kolommen in range (9):
+        kolom = [grid[rijen][kolom] for rij in range(9)]
+        gemist = 9 - len(set(kolom))
+        score = score + gemist 
+    return score
+
+def krijg_blok(blok_rij: int, blok_kol: int):
+    return [
+        (rij, kol)
+        for rij in range(blok_rij * 3, blok_rij * 3 + 3)
+        for kol in range(blok_kol * 3, blok_kol * 3 + 3)
+    ]
+
+
+
+
+    
 
 if __name__ == "__main__":
-    puzzles= read_puzzles("/Users/Jerli/Documents/AAA-Universiteit/Computationele intelligentie/Sudoku_puzzels_5.txt")
+    puzzles= read_puzzles("./Sudoku_puzzels_5.txt")
     first = puzzles[0]
     fixed = get_fixed_cells(first)
     print("Originele puzzel:")
