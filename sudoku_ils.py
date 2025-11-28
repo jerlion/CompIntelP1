@@ -145,6 +145,9 @@ def iterated_local_search(start_grid: Grid, fixed: list[list[bool]], S: int,
     grid = start_grid
     score = evaluate(grid)
 
+    best_grid = grid
+    best_score = score
+
     for iteration in range(max_iters):
 
         # HillClimbing
@@ -152,6 +155,10 @@ def iterated_local_search(start_grid: Grid, fixed: list[list[bool]], S: int,
         while improved and score > 0:
             grid, new_score, improved = hill_climb_step(grid, fixed)
             score = new_score
+
+            if score < best_score:
+                best_score = score
+                best_grid = grid
 
         if score == 0:
             print("Sudoku opgelost!")
@@ -161,8 +168,13 @@ def iterated_local_search(start_grid: Grid, fixed: list[list[bool]], S: int,
         grid = random_walk(grid, fixed, S)
         score = evaluate(grid)
 
+        if score < best_score:
+            best_score = score
+            best_grid = grid
+
     print("Max iteraties bereikt.")
-    return grid
+    print("beste gevonden score:", best_score)
+    return best_grid
 
 if __name__ == "__main__":
     puzzles = read_puzzles("./Sudoku_puzzels_5.txt")
