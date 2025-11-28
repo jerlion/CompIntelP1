@@ -78,12 +78,12 @@ def evaluate(grid:Grid)-> int:
         score += len(missing)
     return score
 
-def get_cells(fixed: list [])
-if __name__ == "__main__":
-    puzzles= read_puzzles("./Sudoku_puzzels_5.txt")
-    first = puzzles[0]
-    fixed = get_fixed_cells(first)
-    start = generate_start_state(first, fixed)
+def get_cells(fixed: list []):
+    if __name__ == "__main__":
+        puzzles= read_puzzles("./Sudoku_puzzels_5.txt")
+        first = puzzles[0]
+        fixed = get_fixed_cells(first)
+        start = generate_start_state(first, fixed)
 
 
     # print("Originele puzzel:")
