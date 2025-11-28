@@ -78,33 +78,103 @@ def evaluate(grid:Grid)-> int:
         score += len(missing)
     return score
 
-def get_cells(fixed: list []):
-    if __name__ == "__main__":
-        puzzles= read_puzzles("./Sudoku_puzzels_5.txt")
-        first = puzzles[0]
-        fixed = get_fixed_cells(first)
-        start = generate_start_state(first, fixed)
+def get_block_cells(block_row: int, block_col: int):
+    cells = []
+    for r in range(block_row * 3, block_row * 3 + 3):
+        for c in range(block_col * 3, block_col * 3 + 3):
+            cells.append((r, c))
+    return cells
 
 
-    # print("Originele puzzel:")
-    # print_grid(first)
+def generate_swaps(grid: Grid, fixed: list[list[bool]], block_row: int, block_col: int):
+    cells = get_block_cells(block_row, block_col)
+    free_cells = [(r, c) for (r, c) in cells if not fixed[r][c]]
 
-    # print("\nStart-state (blokken gevuld met 1-9, fixed cells behouden):")
-    # start = generate_start_state(first, fixed)
-    # print_grid(start)
-    #print(f"Aantal puzzels: {len(puzzles)}\n" )
-    #print_grid(puzzles[0]) 
-    # print("Originele puzzel:")
-    # print_grid(first)
-
-    # print("\nFixed-cellen matrix (True = vast, False = vrij):")
-    # fixed = get_fixed_cells(first)
-    # for row in fixed:
-    #     print(row)
- 
-    # print("Start-state:")
-    # print_grid(start)
-
-    # print("\nEvaluatie van start-state:", evaluate(start))
+    swaps = []
+    for i in range(len(free_cells)):
+        for j in range(i+1, len(free_cells)):
+            swaps.append((free_cells[i], free_cells[j]))
+    return swaps
 
 
+def apply_swap(grid: Grid, pos1: tuple[int, int], pos2: tuple[int, int]) -> Grid:
+    new_grid = [row.copy() for row in grid]
+    r1, c1 = pos1
+    r2, c2 = pos2
+    new_grid[r1][c1], new_grid[r2][c2] = new_grid[r2][c2], new_grid[r1][c1]
+    return new_grid
+
+def hill_climb_step(grid: Grid, fixed: list[list[bool]]):
+    current_score = evaluate(grid)
+
+    #Kies willekeurig 1 block
+    block_row = random.randint(0, 2)
+    block_col = random.randint(0, 2)
+
+    swaps = generate_swaps(grid, fixed, block_row, block_col)
+    best_grid = grid
+    best_score = current_score
+
+   
+    for (p1, p2) in swaps:
+        new_grid = apply_swap(grid, p1, p2)
+        new_score = evaluate(new_grid)
+
+        #Neem beste uitkomst
+        if new_score <= best_score:
+            best_score = new_score
+            best_grid = new_grid
+
+    improved = best_score < current_score
+    return best_grid, best_score, improved
+
+def random_walk(grid: Grid, fixed: list[list[bool]], S: int) -> Grid:
+    for _ in range(S):
+        block_row = random.randint(0, 2)
+        block_col = random.randint(0, 2)
+        swaps = generate_swaps(grid, fixed, block_row, block_col)
+        if swaps:
+            pos1, pos2 = random.choice(swaps)
+            grid = apply_swap(grid, pos1, pos2)
+    return grid
+
+
+def iterated_local_search(start_grid: Grid, fixed: list[list[bool]], S: int,
+                          max_iters=10000):
+
+    grid = start_grid
+    score = evaluate(grid)
+
+    for iteration in range(max_iters):
+
+        # HillClimbing
+        improved = True
+        while improved and score > 0:
+            grid, new_score, improved = hill_climb_step(grid, fixed)
+            score = new_score
+
+        if score == 0:
+            print("Sudoku opgelost!")
+            return grid
+
+        #Geen verbetering, doe random walk
+        grid = random_walk(grid, fixed, S)
+        score = evaluate(grid)
+
+    print("Max iteraties bereikt.")
+    return grid
+
+if __name__ == "__main__":
+    puzzles = read_puzzles("./Sudoku_puzzels_5.txt")
+    first = puzzles[0]
+
+    fixed = get_fixed_cells(first)
+    start = generate_start_state(first, fixed)
+
+    print("Start score:", evaluate(start))
+
+    solved = iterated_local_search(start, fixed, S=10)
+
+    print("\nOplossing:")
+    print_grid(solved)
+    print("\nEindscore:", evaluate(solved))
