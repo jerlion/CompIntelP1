@@ -63,43 +63,37 @@ def generate_start_state(grid: Grid, fixed: list[list[bool]]) -> Grid:
                         idx += 1
     return new_grid
 
-def evaluatiefunctie(grid: Grid):
+def evaluate(grid:Grid)-> int:
     score = 0
+    target = set(range(1, 10 ))
 
-    for rij in range (9):
-        gemist = 9 - len(set(grid[rij]))
-        score = score + gemist
+    for r in range(9):
+        row_numbers = set(grid[r])
+        missing = target - row_numbers
+        score += len(missing)
 
-    for kol in range (9):
-        kolom = [grid[rij][kol] for rij in range(9)]
-        gemist = 9 - len(set(kolom))
-        score = score + gemist 
+    for c in range(9):
+        col_numbers = set(grid[r][c] for r in range(9))
+        missing = target - col_numbers
+        score += len(missing)
     return score
 
-def krijg_blok(blok_rij: int, blok_kol: int):
-    return [
-        (rij, kol)
-        for rij in range(blok_rij * 3, blok_rij * 3 + 3)
-        for kol in range(blok_kol * 3, blok_kol * 3 + 3)
-    ]
-
-
-
-
-    
-
+def get_cells(fixed: list [])
 if __name__ == "__main__":
     puzzles= read_puzzles("./Sudoku_puzzels_5.txt")
     first = puzzles[0]
     fixed = get_fixed_cells(first)
-    print("Originele puzzel:")
-    print_grid(first)
-
-    print("\nStart-state (blokken gevuld met 1-9, fixed cells behouden):")
     start = generate_start_state(first, fixed)
-    print_grid(start)
+
+
+    # print("Originele puzzel:")
+    # print_grid(first)
+
+    # print("\nStart-state (blokken gevuld met 1-9, fixed cells behouden):")
+    # start = generate_start_state(first, fixed)
+    # print_grid(start)
     #print(f"Aantal puzzels: {len(puzzles)}\n" )
-    #print_grid(puzzles[0])
+    #print_grid(puzzles[0]) 
     # print("Originele puzzel:")
     # print_grid(first)
 
@@ -107,6 +101,10 @@ if __name__ == "__main__":
     # fixed = get_fixed_cells(first)
     # for row in fixed:
     #     print(row)
+ 
+    # print("Start-state:")
+    # print_grid(start)
 
+    # print("\nEvaluatie van start-state:", evaluate(start))
 
 
