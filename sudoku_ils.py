@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
     print("Start score:", evaluate(start))
 
-    solved = iterated_local_search(start, fixed, S=10)
+    solved = iterated_local_search(start, fixed, S=250)
 
     print("\nOplossing:")
     print_grid(solved)
