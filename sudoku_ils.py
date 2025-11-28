@@ -46,21 +46,22 @@ def generate_start_state(grid: Grid, fixed: list[list[bool]]) -> Grid:
 
     for block_row in range(3):
         for block_col in range(3):
-            present = set()
+            used = set()
+            cells = []
             for r in range(block_row * 3, block_row * 3 + 3 ):
                 for c in range(block_col *3, block_col * 3 + 3):
                     if fixed[r][c] and new_grid[r][c]!= 0 :
-                        present.add(new_grid[r][c])
+                        used.add(new_grid[r][c])
+                    else :
+                        cells.append((r, c))
             
-            remaining = [d for d in range (1, 10) if d not in present]
-            random.shuffle(remaining)
+            missing = list(set(range(1, 10)) - used)
+            random.shuffle(missing)
 
-            idx = 0 
-            for r in range(block_row * 3, block_row * 3 + 3 ):
-                for c in range(block_col * 3 , block_col * 3 + 3 ):
-                    if not fixed[r][c]:
-                        new_grid[r][c] = remaining[idx]
-                        idx += 1
+            
+            
+            for (r, c), val in zip(cells, missing):
+                new_grid[r][c] = val
     return new_grid
 
 def precompute(fixed: list[list[bool]]):
@@ -80,17 +81,16 @@ def precompute(fixed: list[list[bool]]):
 
 def evaluate(grid:Grid)-> int:
     score = 0
-    target = set(range(1, 10 ))
+    
 
     for r in range(9):
-        row_numbers = set(grid[r])
-        missing = target - row_numbers
-        score += len(missing)
+        row = grid[r]
+        score += 9 - len(set(row))
 
     for c in range(9):
-        col_numbers = set(grid[r][c] for r in range(9))
-        missing = target - col_numbers
-        score += len(missing)
+        col = [grid[r][c] for r in range(9)]
+        score += 9 - len(set(col))
+            
     return score
 
 def get_block_cells(block_row: int, block_col: int):
@@ -109,12 +109,11 @@ def apply_swap(grid: Grid, pos1: tuple[int, int], pos2: tuple[int, int]) -> Grid
 
 def hill_climb_step(grid: Grid, swaps_per_block):
     current_score = evaluate(grid)
-    best_grid = grid
-    best_score = current_score
 
     for block_row in range(3):
         for block_col in range(3):
             swaps = swaps_per_block[(block_row, block_col )]
+            random.shuffle(swaps)
 
 
             for (p1, p2) in swaps:
@@ -122,12 +121,10 @@ def hill_climb_step(grid: Grid, swaps_per_block):
                 new_score = evaluate(new_grid)
 
                 #Neem beste uitkomst
-                if new_score < best_score:
-                    best_score = new_score
-                    best_grid = new_grid
+                if new_score < current_score:
+                    return new_grid, new_score, True
 
-    improved = best_score < current_score
-    return best_grid, best_score, improved
+    return grid, current_score, False
 
 def random_walk(grid: Grid, swaps_per_block , S: int) -> Grid:
     for _ in range(S):
@@ -141,7 +138,7 @@ def random_walk(grid: Grid, swaps_per_block , S: int) -> Grid:
 
 
 def iterated_local_search(start_grid: Grid, fixed: list[list[bool]], S: int,
-                          max_iters=10000):
+                          max_iters=1000):
 
     grid = start_grid
     score = evaluate(grid)
@@ -149,8 +146,12 @@ def iterated_local_search(start_grid: Grid, fixed: list[list[bool]], S: int,
     best_grid = grid
     best_score = score
     swaps_per_block = precompute(fixed)
-    for iteration in range(max_iters):
 
+    stall_limit = 2000
+    stall_count = 0
+
+
+    for _ in range( max_iters):
         # HillClimbing
         improved = True
         while improved and score > 0:
@@ -160,9 +161,9 @@ def iterated_local_search(start_grid: Grid, fixed: list[list[bool]], S: int,
             if score < best_score:
                 best_score = score
                 best_grid = grid
+                stall_count = 0
 
         if score == 0:
-            print("Sudoku opgelost!")
             return grid
 
         #Geen verbetering, doe random walk
@@ -172,22 +173,39 @@ def iterated_local_search(start_grid: Grid, fixed: list[list[bool]], S: int,
         if score < best_score:
             best_score = score
             best_grid = grid
+            stall_count = 0
+        else :
+            stall_count += 1
+            if stall_count >= stall_limit:
+                break
 
-    print("Max iteraties bereikt.")
-    print("beste gevonden score:", best_score)
+
     return best_grid
 
 if __name__ == "__main__":
     puzzles = read_puzzles("./Sudoku_puzzels_5.txt")
-    first = puzzles[0]
+    for i, puzzle in enumerate(puzzles, start=1):
+        print(f"\n================ Sudoku {i} ================")
+        fixed = get_fixed_cells(puzzle)
+        best_overall_grid = None
+        best_overall_score = 999
+        for run in range(10):  # bijvoorbeeld 10 runs
+            start = generate_start_state(puzzle, fixed)
 
-    fixed = get_fixed_cells(first)
-    start = generate_start_state(first, fixed)
+            solved = iterated_local_search(start, fixed, S=250)
+            end_score = evaluate(solved)
 
-    print("Start score:", evaluate(start))
 
-    solved = iterated_local_search(start, fixed, S=250)
 
-    print("\nOplossing:")
-    print_grid(solved)
-    print("\nEindscore:", evaluate(solved))
+            if end_score < best_overall_score:
+                best_overall_score = end_score
+                best_overall_grid = solved
+
+        if best_overall_score == 0:
+            print("Sudoku opgelost!")
+        else:
+            print(f"Max iteraties bereikt, beste gevonden score: {best_overall_score}")
+
+        print("\nOplossing:")
+        print_grid(best_overall_grid)
+        print("\nEindscore:", best_overall_score)
