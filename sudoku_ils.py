@@ -63,6 +63,21 @@ def generate_start_state(grid: Grid, fixed: list[list[bool]]) -> Grid:
                         idx += 1
     return new_grid
 
+def precompute(fixed: list[list[bool]]):
+    swaps_per_block = {}
+    for block_row in range(3):
+        for block_col in range(3):
+            cells = get_block_cells(block_row, block_col)
+            free_cells = [(r, c) for (r, c)in cells if not fixed[r][c]]
+
+            swaps = []
+            for i in range(len(free_cells)):
+                for j in range(i + 1, len(free_cells)):
+                    swaps.append((free_cells[i], free_cells[j]))
+            
+            swaps_per_block[(block_row,block_col)] = swaps
+    return swaps_per_block
+
 def evaluate(grid:Grid)-> int:
     score = 0
     target = set(range(1, 10 ))
@@ -85,18 +100,6 @@ def get_block_cells(block_row: int, block_col: int):
             cells.append((r, c))
     return cells
 
-
-def generate_swaps(grid: Grid, fixed: list[list[bool]], block_row: int, block_col: int):
-    cells = get_block_cells(block_row, block_col)
-    free_cells = [(r, c) for (r, c) in cells if not fixed[r][c]]
-
-    swaps = []
-    for i in range(len(free_cells)):
-        for j in range(i+1, len(free_cells)):
-            swaps.append((free_cells[i], free_cells[j]))
-    return swaps
-
-
 def apply_swap(grid: Grid, pos1: tuple[int, int], pos2: tuple[int, int]) -> Grid:
     new_grid = [row.copy() for row in grid]
     r1, c1 = pos1
@@ -104,14 +107,14 @@ def apply_swap(grid: Grid, pos1: tuple[int, int], pos2: tuple[int, int]) -> Grid
     new_grid[r1][c1], new_grid[r2][c2] = new_grid[r2][c2], new_grid[r1][c1]
     return new_grid
 
-def hill_climb_step(grid: Grid, fixed: list[list[bool]]):
+def hill_climb_step(grid: Grid, swaps_per_block):
     current_score = evaluate(grid)
     best_grid = grid
     best_score = current_score
 
     for block_row in range(3):
         for block_col in range(3):
-            swaps = generate_swaps(grid, fixed, block_row, block_col )
+            swaps = swaps_per_block[(block_row, block_col )]
 
 
             for (p1, p2) in swaps:
@@ -126,11 +129,11 @@ def hill_climb_step(grid: Grid, fixed: list[list[bool]]):
     improved = best_score < current_score
     return best_grid, best_score, improved
 
-def random_walk(grid: Grid, fixed: list[list[bool]], S: int) -> Grid:
+def random_walk(grid: Grid, swaps_per_block , S: int) -> Grid:
     for _ in range(S):
         block_row = random.randint(0, 2)
         block_col = random.randint(0, 2)
-        swaps = generate_swaps(grid, fixed, block_row, block_col)
+        swaps = swaps_per_block[(block_row, block_col)]
         if swaps:
             pos1, pos2 = random.choice(swaps)
             grid = apply_swap(grid, pos1, pos2)
@@ -145,13 +148,13 @@ def iterated_local_search(start_grid: Grid, fixed: list[list[bool]], S: int,
 
     best_grid = grid
     best_score = score
-
+    swaps_per_block = precompute(fixed)
     for iteration in range(max_iters):
 
         # HillClimbing
         improved = True
         while improved and score > 0:
-            grid, new_score, improved = hill_climb_step(grid, fixed)
+            grid, new_score, improved = hill_climb_step(grid, swaps_per_block)
             score = new_score
 
             if score < best_score:
@@ -163,7 +166,7 @@ def iterated_local_search(start_grid: Grid, fixed: list[list[bool]], S: int,
             return grid
 
         #Geen verbetering, doe random walk
-        grid = random_walk(grid, fixed, S)
+        grid = random_walk(grid, swaps_per_block, S)
         score = evaluate(grid)
 
         if score < best_score:
