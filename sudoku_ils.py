@@ -121,7 +121,7 @@ def hill_climb_step(grid: Grid, fixed: list[list[bool]]):
         new_score = evaluate(new_grid)
 
         #Neem beste uitkomst
-        if new_score <= best_score:
+        if new_score < best_score:
             best_score = new_score
             best_grid = new_grid
 
