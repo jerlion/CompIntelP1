@@ -115,15 +115,19 @@ def hill_climb_step(grid: Grid, fixed: list[list[bool]]):
     best_grid = grid
     best_score = current_score
 
-   
-    for (p1, p2) in swaps:
-        new_grid = apply_swap(grid, p1, p2)
-        new_score = evaluate(new_grid)
+    for block_row in range(3):
+        for block_col in range(3):
+            swaps = generate_swaps(grid, fixed, block_row, block_col )
 
-        #Neem beste uitkomst
-        if new_score < best_score:
-            best_score = new_score
-            best_grid = new_grid
+
+            for (p1, p2) in swaps:
+                new_grid = apply_swap(grid, p1, p2)
+                new_score = evaluate(new_grid)
+
+                #Neem beste uitkomst
+                if new_score < best_score:
+                    best_score = new_score
+                    best_grid = new_grid
 
     improved = best_score < current_score
     return best_grid, best_score, improved
