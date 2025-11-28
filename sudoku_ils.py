@@ -106,12 +106,6 @@ def apply_swap(grid: Grid, pos1: tuple[int, int], pos2: tuple[int, int]) -> Grid
 
 def hill_climb_step(grid: Grid, fixed: list[list[bool]]):
     current_score = evaluate(grid)
-
-    #Kies willekeurig 1 block
-    block_row = random.randint(0, 2)
-    block_col = random.randint(0, 2)
-
-    swaps = generate_swaps(grid, fixed, block_row, block_col)
     best_grid = grid
     best_score = current_score
 
