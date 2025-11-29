@@ -41,6 +41,8 @@ def get_fixed_cells(grid: Grid) -> list[list[bool]]:
                 fixed[r][c] = True
     return fixed
 
+
+
 def generate_start_state(grid: Grid, fixed: list[list[bool]]) -> Grid:
     new_grid: Grid = [row.copy() for row in grid]
 
@@ -147,7 +149,7 @@ def iterated_local_search(start_grid: Grid, fixed: list[list[bool]], S: int,
     best_score = score
     swaps_per_block = precompute(fixed)
 
-    stall_limit = 2000
+    stall_limit = 400
     stall_count = 0
 
 
@@ -189,10 +191,10 @@ if __name__ == "__main__":
         fixed = get_fixed_cells(puzzle)
         best_overall_grid = None
         best_overall_score = 999
-        for run in range(10):  # bijvoorbeeld 10 runs
+        for run in range(10):  
             start = generate_start_state(puzzle, fixed)
 
-            solved = iterated_local_search(start, fixed, S=250)
+            solved = iterated_local_search(start, fixed, S=200)
             end_score = evaluate(solved)
 
 
